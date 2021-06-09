@@ -1,0 +1,56 @@
+{
+  "project_info": {
+    "project_number": "531298505304",
+    "firebase_url": "https://ultra-money.firebaseio.com",
+    "project_id": "ultra-money",
+    "storage_bucket": "ultra-money.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:531298505304:android:ca9d44cb8d9b5a2c29f02d",
+        "android_client_info": {
+          "package_name": "com.fuchsialab.circlecutter"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "531298505304-2812v9dfslhcuotajeicohdtmi94q3dj.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.fuchsialab.circlecutter",
+            "certificate_hash": "9e9d4d92c9d51a017f8e463080d0df8aa45be924"
+          }
+        },
+        {
+          "client_id": "531298505304-i8cj198lkolbeoalt3519jq9m1ka63km.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.fuchsialab.circlecutter",
+            "certificate_hash": "c4744223119835ee353ba1cdca2da5aa2da2292a"
+          }
+        },
+        {
+          "client_id": "531298505304-ajgpd2kl56l2l6269rfb1tcsulosnj8v.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDVxZf0oCJl0S3WKbqS9dgIrVb1qrUEj8w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "531298505304-ajgpd2kl56l2l6269rfb1tcsulosnj8v.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

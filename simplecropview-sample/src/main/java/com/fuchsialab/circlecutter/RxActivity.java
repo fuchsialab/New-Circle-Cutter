@@ -1,0 +1,60 @@
+package com.fuchsialab.circlecutter;
+
+import android.app.Activity;
+import android.content.Intent;
+import android.content.res.Configuration;
+import android.net.Uri;
+import android.os.Bundle;
+
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+
+
+public class RxActivity extends AppCompatActivity {
+  private static final String TAG = RxActivity.class.getSimpleName();
+
+  public static Intent createIntent(Activity activity) {
+    return new Intent(activity, RxActivity.class);
+  }
+
+  // Lifecycle Method ////////////////////////////////////////////////////////////////////////////
+
+  @Override protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.activity_basic);
+
+    if(savedInstanceState == null){
+      getSupportFragmentManager().beginTransaction().add(R.id.container, RxFragment.newInstance()).commit();
+    }
+
+    // apply custom font
+    FontUtils.setFont(findViewById(R.id.root_layout));
+
+    initToolbar();
+  }
+
+  @Override public void onConfigurationChanged(Configuration newConfig) {
+    super.onConfigurationChanged(newConfig);
+  }
+
+  @Override public boolean onSupportNavigateUp() {
+    onBackPressed();
+    return super.onSupportNavigateUp();
+  }
+
+  private void initToolbar() {
+    Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+    setSupportActionBar(toolbar);
+    ActionBar actionBar = getSupportActionBar();
+    FontUtils.setTitle(actionBar, "Circle Cutter");
+    actionBar.setDisplayHomeAsUpEnabled(true);
+    actionBar.setHomeButtonEnabled(true);
+  }
+
+  public void startResultActivity(Uri uri) {
+    if (isFinishing()) return;
+    // Start ResultActivity
+    startActivity(ResultActivity.createIntent(this, uri));
+  }
+}
