@@ -171,7 +171,7 @@ public class MainActivity extends AppCompatActivity implements UpdateHelper.OnUp
   @Override
   public void onUpdateCheckListener(String urlApp) {
 
-    AlertDialog alertDialog=new AlertDialog.Builder(this)
+    AlertDialog alertDialog=new AlertDialog.Builder(this,R.style.MyDialogTheme)
             .setTitle("New Version Available")
             .setMessage(" Please update for better experience")
             .setPositiveButton("UPDATE", new DialogInterface.OnClickListener() {

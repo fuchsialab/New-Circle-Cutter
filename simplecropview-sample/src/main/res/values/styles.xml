@@ -26,4 +26,8 @@
     <item name="android:gravity">center_horizontal|center_vertical</item>
   </style>
 
+  <style name="MyDialogTheme" parent="Theme.AppCompat.Light.Dialog.Alert">
+    <item name="android:background">#EFF4F0</item>
+  </style>
+
 </resources>
