@@ -13,12 +13,24 @@ import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.facebook.ads.AdView;
+import com.facebook.ads.AudienceNetworkAds;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.isseiaoki.simplecropview.util.Utils;
+
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -27,6 +39,12 @@ public class ResultActivity extends AppCompatActivity {
   private static final String TAG = ResultActivity.class.getSimpleName();
   private ImageView mImageView;
   private ExecutorService mExecutor;
+
+  FirebaseAuth mAuth;
+  DatabaseReference mDatabase;
+  private String bannerid;
+  RelativeLayout layout;
+  private AdView adView;
 
   public static Intent createIntent(Activity activity, Uri uri) {
     Intent intent = new Intent(activity, ResultActivity.class);
@@ -37,6 +55,12 @@ public class ResultActivity extends AppCompatActivity {
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_result);
+
+    mAuth=FirebaseAuth.getInstance();
+    mDatabase= FirebaseDatabase.getInstance().getReference();
+    AudienceNetworkAds.initialize(this);
+
+    Ads();
 
     // apply custom font
     FontUtils.setFont((ViewGroup) findViewById(R.id.layout_root));
@@ -53,6 +77,9 @@ public class ResultActivity extends AppCompatActivity {
 
   @Override protected void onDestroy() {
     mExecutor.shutdown();
+    if (adView != null) {
+      adView.destroy();
+    }
     super.onDestroy();
   }
 
@@ -69,7 +96,7 @@ public class ResultActivity extends AppCompatActivity {
     Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
     setSupportActionBar(toolbar);
     ActionBar actionBar = getSupportActionBar();
-    FontUtils.setTitle(actionBar, "Your Cropped Image");
+    FontUtils.setTitle(actionBar, "Circle Cutter");
     actionBar.setDisplayHomeAsUpEnabled(true);
     actionBar.setHomeButtonEnabled(true);
   }
@@ -114,4 +141,29 @@ public class ResultActivity extends AppCompatActivity {
       }
     }
   }
+
+  private void Ads() {
+
+    DatabaseReference rootref = FirebaseDatabase.getInstance().getReference().child("FbAds");
+    rootref.addListenerForSingleValueEvent(new ValueEventListener() {
+
+
+      @Override
+      public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+        bannerid = String.valueOf(Objects.requireNonNull(dataSnapshot.child("banner").getValue()).toString());
+        layout = findViewById(R.id.adView);
+        adView = new com.facebook.ads.AdView(ResultActivity.this, bannerid, com.facebook.ads.AdSize.BANNER_HEIGHT_50);
+        layout.addView(adView);
+        adView.loadAd();
+
+      }
+
+      @Override
+      public void onCancelled(@NonNull DatabaseError databaseError) {
+
+      }
+    });
+
+  }
+
 }

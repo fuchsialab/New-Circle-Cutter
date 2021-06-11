@@ -1,18 +1,46 @@
 package com.fuchsialab.circlecutter;
 
 
+import android.app.ProgressDialog;
+import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.facebook.ads.Ad;
+import com.facebook.ads.AdError;
+import com.facebook.ads.AdOptionsView;
+import com.facebook.ads.AdView;
+import com.facebook.ads.InterstitialAd;
+import com.facebook.ads.InterstitialAdListener;
+import com.facebook.ads.MediaView;
+import com.facebook.ads.NativeAd;
+import com.facebook.ads.NativeAdLayout;
+import com.facebook.ads.NativeAdListener;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -34,11 +62,30 @@ public class MainActivity extends AppCompatActivity implements UpdateHelper.OnUp
 
   private long backPressTime;
 
+  FirebaseAuth mAuth;
+  DatabaseReference mDatabase;
+
+  private final String TAG = MainActivity.class.getSimpleName();
+  private NativeAd nativeAd;
+  private InterstitialAd interstitialAd;
+  private String nativeId;
+  private String interstitialId;
+
+  private NativeAdLayout nativeAdLayout;
+  private LinearLayout adView;
+
   Button button;
+  ProgressDialog progressDialog;
+  Timer timer;
 
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
+
+    mAuth=FirebaseAuth.getInstance();
+    mDatabase= FirebaseDatabase.getInstance().getReference();
+
+    Ads();
 
     toolbar = findViewById(R.id.toolbar);
     setSupportActionBar(toolbar);
@@ -48,6 +95,21 @@ public class MainActivity extends AppCompatActivity implements UpdateHelper.OnUp
     drawerLayout.addDrawerListener(toggle);
     toggle.syncState();
     toggle.getDrawerArrowDrawable().setColor(getResources().getColor(R.color.abba));
+
+
+    progressDialog =new ProgressDialog(MainActivity.this);
+    progressDialog.show();
+    progressDialog.setContentView(R.layout.progress);
+    Objects.requireNonNull(progressDialog.getWindow()).setBackgroundDrawableResource(android.R.color.transparent);
+
+    timer=new Timer();
+    timer.schedule(new TimerTask() {
+      @Override
+      public void run() {
+        progressDialog.dismiss();
+
+      }
+    },3000);
 
     UpdateHelper.with(this)
             .onUpdateCheck(this)
@@ -69,14 +131,75 @@ public class MainActivity extends AppCompatActivity implements UpdateHelper.OnUp
 
     AppRate.showRateDialogIfMeetsConditions(this);
 
+
     button= findViewById(R.id.rx_sample_button);
 
     button.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View v) {
 
-        Intent intent = new Intent(MainActivity.this,RxActivity.class);
-        startActivity(intent);
+        if (interstitialAd != null) {
+          if (interstitialAd.isAdLoaded()) {
+            interstitialAd.show();
+
+          } else {
+            interstitialAd.loadAd();
+
+            Intent intent = new Intent(MainActivity.this,RxActivity.class);
+            startActivity(intent);
+          }
+
+          InterstitialAdListener interstitialAdListener = new InterstitialAdListener() {
+            @Override
+            public void onInterstitialDisplayed(Ad ad) {
+              interstitialAd.loadAd();
+            }
+
+            @Override
+            public void onInterstitialDismissed(Ad ad) {
+              interstitialAd.loadAd();
+
+              Intent intent = new Intent(MainActivity.this,RxActivity.class);
+              startActivity(intent);
+
+            }
+
+            @Override
+            public void onError(Ad ad, AdError adError) {
+              interstitialAd.loadAd();
+            }
+
+            @Override
+            public void onAdLoaded(Ad ad) {
+
+              Log.d(TAG, "Interstitial ad is loaded and ready to be displayed!");
+
+            }
+
+            @Override
+            public void onAdClicked(Ad ad) {
+
+              Log.d(TAG, "Interstitial ad clicked!");
+            }
+
+            @Override
+            public void onLoggingImpression(Ad ad) {
+
+              Log.d(TAG, "Interstitial ad impression logged!");
+            }
+          };
+
+          interstitialAd.loadAd(
+                  interstitialAd.buildLoadAdConfig()
+                          .withAdListener(interstitialAdListener)
+                          .build());
+
+        } else {
+
+          Intent intent = new Intent(MainActivity.this,RxActivity.class);
+          startActivity(intent);
+        }
+
       }
     });
 
@@ -106,7 +229,7 @@ public class MainActivity extends AppCompatActivity implements UpdateHelper.OnUp
             final String appPackageName = getPackageName();
             try {
               startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + appPackageName)));
-            } catch (android.content.ActivityNotFoundException anfe) {
+            } catch (ActivityNotFoundException anfe) {
               startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + appPackageName)));
             }
 
@@ -129,11 +252,11 @@ public class MainActivity extends AppCompatActivity implements UpdateHelper.OnUp
 
           case R.id.menushare:
 
-            Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
+            Intent sharingIntent = new Intent(Intent.ACTION_SEND);
             sharingIntent.setType("text/plain");
             String shareBody = "Download Circle Cutter App and Crop your picture in circle shape .  https://play.google.com/store/apps/details?id=com.fuchsialab.circlecutter";
-            sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "Circle Cutter");
-            sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, shareBody);
+            sharingIntent.putExtra(Intent.EXTRA_SUBJECT, "Circle Cutter");
+            sharingIntent.putExtra(Intent.EXTRA_TEXT, shareBody);
             startActivity(Intent.createChooser(sharingIntent, "Share via"));
             drawerLayout.closeDrawers();
 
@@ -197,4 +320,122 @@ public class MainActivity extends AppCompatActivity implements UpdateHelper.OnUp
   }
 
 
+  private void Ads() {
+
+    DatabaseReference rootref = FirebaseDatabase.getInstance().getReference().child("FbAds");
+    rootref.addListenerForSingleValueEvent(new ValueEventListener() {
+
+      @Override
+      public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+        nativeId = String.valueOf(Objects.requireNonNull(dataSnapshot.child("nativeId").getValue()).toString());
+        nativeAd = new NativeAd(MainActivity.this, nativeId);
+        interstitialId = String.valueOf(Objects.requireNonNull(dataSnapshot.child("Interstitial").getValue()).toString());
+        interstitialAd = new com.facebook.ads.InterstitialAd(MainActivity.this, interstitialId);
+
+        loadNativeAd();
+        interstitialAd.loadAd();
+
+      }
+
+      @Override
+      public void onCancelled(@NonNull DatabaseError databaseError) {
+
+      }
+    });
+
+  }
+
+  @Override
+  public void onDestroy() {
+   if(interstitialAd != null) {
+      interstitialAd.destroy();
+    }
+    super.onDestroy();
+  }
+
+  private void loadNativeAd() {
+
+
+    NativeAdListener nativeAdListener = new NativeAdListener() {
+      @Override
+      public void onMediaDownloaded(Ad ad) {
+
+      }
+
+      @Override
+      public void onError(Ad ad, AdError adError) {
+
+      }
+
+      @Override
+      public void onAdLoaded(Ad ad) {
+        // Race condition, load() called again before last ad was displayed
+        if (nativeAd == null || nativeAd != ad) {
+          return;
+        }
+        // Inflate Native Ad into Container
+        inflateAd(nativeAd);
+      }
+
+      @Override
+      public void onAdClicked(Ad ad) {
+
+      }
+
+      @Override
+      public void onLoggingImpression(Ad ad) {
+
+      }
+
+    };
+
+    nativeAd.loadAd(
+            nativeAd.buildLoadAdConfig()
+                    .withAdListener(nativeAdListener)
+                    .build());
+  }
+
+  private void inflateAd(NativeAd nativeAd) {
+
+    nativeAd.unregisterView();
+
+    // Add the Ad view into the ad container.
+    nativeAdLayout = findViewById(R.id.native_ad_container);
+    LayoutInflater inflater = LayoutInflater.from(MainActivity.this);
+    // Inflate the Ad view.  The layout referenced should be the one you created in the last step.
+    adView = (LinearLayout) inflater.inflate(R.layout.custom_native_ad_layout, nativeAdLayout, false);
+    nativeAdLayout.addView(adView);
+
+    // Add the AdOptionsView
+    LinearLayout adChoicesContainer = findViewById(R.id.ad_choices_container);
+    AdOptionsView adOptionsView = new AdOptionsView(MainActivity.this, nativeAd, nativeAdLayout);
+    adChoicesContainer.removeAllViews();
+    adChoicesContainer.addView(adOptionsView, 0);
+
+    // Create native UI using the ad metadata.
+    MediaView nativeAdIcon = adView.findViewById(R.id.native_ad_icon);
+    TextView nativeAdTitle = adView.findViewById(R.id.native_ad_title);
+    MediaView nativeAdMedia = adView.findViewById(R.id.native_ad_media);
+    TextView nativeAdSocialContext = adView.findViewById(R.id.native_ad_social_context);
+    TextView nativeAdBody = adView.findViewById(R.id.native_ad_body);
+    TextView sponsoredLabel = adView.findViewById(R.id.native_ad_sponsored_label);
+    Button nativeAdCallToAction = adView.findViewById(R.id.native_ad_call_to_action);
+
+    // Set the Text.
+    nativeAdTitle.setText(nativeAd.getAdvertiserName());
+    nativeAdBody.setText(nativeAd.getAdBodyText());
+    nativeAdSocialContext.setText(nativeAd.getAdSocialContext());
+    nativeAdCallToAction.setVisibility(nativeAd.hasCallToAction() ? View.VISIBLE : View.INVISIBLE);
+    nativeAdCallToAction.setText(nativeAd.getAdCallToAction());
+    sponsoredLabel.setText(nativeAd.getSponsoredTranslation());
+
+    // Create a list of clickable views
+    List<View> clickableViews = new ArrayList<>();
+    clickableViews.add(nativeAdTitle);
+    clickableViews.add(nativeAdCallToAction);
+
+    // Register the Title and CTA button to listen for clicks.
+    nativeAd.registerViewForInteraction(
+            adView, nativeAdMedia, nativeAdIcon, clickableViews);
+  }
 }

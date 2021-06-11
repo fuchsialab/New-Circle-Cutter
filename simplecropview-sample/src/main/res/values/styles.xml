@@ -1,16 +1,17 @@
 <resources>
 
-  <style name="AppTheme.Light.NoActionBar" parent="Theme.AppCompat.NoActionBar">
+  <style name="AppTheme.Light.NoActionBar" parent="Theme.Design.Light.NoActionBar">
     <item name="colorPrimary">@color/colorPrimary</item>
-    <item name="android:textColorSecondary">@color/colorButtonNormal</item>
+    <item name="android:textColorSecondary">@color/abba</item>
     <item name="android:colorBackground">@color/colorPrimary</item>
     <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
     <item name="colorAccent">@color/colorAccent</item>
-    <item name="colorButtonNormal">@color/colorButtonNormal</item>
-    <item name="android:windowBackground">@color/windowBackground</item>
+    <item name="colorButtonNormal">@color/abba</item>
+      <item name="android:windowBackground">@color/windowBackground</item>
     <item name="android:textAppearanceButton">@style/AppTheme.Button.Borderless</item>
     <item name="android:textAppearanceSmall">@style/TextAppearance.Small</item>
   </style>
+
 
   <style name="AppTheme.Button.Borderless" parent="Widget.AppCompat.Button.Borderless">
     <item name="android:background">?attr/selectableItemBackground</item>

@@ -13,17 +13,32 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.Toast;
 
+import com.facebook.ads.Ad;
+import com.facebook.ads.AdError;
+import com.facebook.ads.AdView;
+import com.facebook.ads.AudienceNetworkAds;
+import com.facebook.ads.InterstitialAd;
+import com.facebook.ads.InterstitialAdListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.isseiaoki.simplecropview.CropImageView;
 import com.isseiaoki.simplecropview.util.Logger;
 import com.isseiaoki.simplecropview.util.Utils;
 import com.tbruyelle.rxpermissions2.RxPermissions;
 
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 import io.reactivex.CompletableSource;
 import io.reactivex.SingleSource;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -38,9 +53,17 @@ import io.reactivex.schedulers.Schedulers;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Objects;
 
 public class RxFragment extends Fragment {
   private static final String TAG = RxFragment.class.getSimpleName();
+
+  FragmentActivity activity;
+  FirebaseAuth mAuth;
+  DatabaseReference mDatabase;
+
+  private InterstitialAd interstitialAd;
+  private String interstitialId;
 
   private static final int REQUEST_PICK_IMAGE = 10011;
   private static final int REQUEST_SAF_PICK_IMAGE = 10012;
@@ -80,6 +103,14 @@ public class RxFragment extends Fragment {
     super.onViewCreated(view, savedInstanceState);
     // bind Views
     bindViews(view);
+
+    activity = getActivity();
+    AudienceNetworkAds.initialize(getActivity());
+    mAuth=FirebaseAuth.getInstance();
+    mDatabase= FirebaseDatabase.getInstance().getReference();
+
+    Ads();
+
 
     if (savedInstanceState != null) {
       // restore data
@@ -302,7 +333,66 @@ public class RxFragment extends Fragment {
     @Override public void onClick(View v) {
       switch (v.getId()) {
         case R.id.buttonDone:
-          mDisposable.add(cropImage());
+
+          if (interstitialAd != null) {
+            if (interstitialAd.isAdLoaded()) {
+              interstitialAd.show();
+
+            } else {
+              interstitialAd.loadAd();
+
+              mDisposable.add(cropImage());
+            }
+
+            InterstitialAdListener interstitialAdListener = new InterstitialAdListener() {
+              @Override
+              public void onInterstitialDisplayed(Ad ad) {
+                interstitialAd.loadAd();
+              }
+
+              @Override
+              public void onInterstitialDismissed(Ad ad) {
+                interstitialAd.loadAd();
+
+                mDisposable.add(cropImage());
+
+              }
+
+              @Override
+              public void onError(Ad ad, AdError adError) {
+                interstitialAd.loadAd();
+              }
+
+              @Override
+              public void onAdLoaded(Ad ad) {
+
+                Log.d(TAG, "Interstitial ad is loaded and ready to be displayed!");
+
+              }
+
+              @Override
+              public void onAdClicked(Ad ad) {
+
+                Log.d(TAG, "Interstitial ad clicked!");
+              }
+
+              @Override
+              public void onLoggingImpression(Ad ad) {
+
+                Log.d(TAG, "Interstitial ad impression logged!");
+              }
+            };
+
+            interstitialAd.loadAd(
+                    interstitialAd.buildLoadAdConfig()
+                            .withAdListener(interstitialAdListener)
+                            .build());
+
+          } else {
+
+            mDisposable.add(cropImage());
+          }
+
           break;
         case R.id.buttonCircle:
           mCropView.setCropMode(CropImageView.CropMode.CIRCLE);
@@ -319,4 +409,36 @@ public class RxFragment extends Fragment {
       }
     }
   };
+
+
+  private void Ads() {
+
+    DatabaseReference rootref = FirebaseDatabase.getInstance().getReference().child("FbAds");
+    rootref.addListenerForSingleValueEvent(new ValueEventListener() {
+
+      @Override
+      public void onDataChange(@androidx.annotation.NonNull DataSnapshot dataSnapshot) {
+
+        interstitialId = String.valueOf(Objects.requireNonNull(dataSnapshot.child("Interstitial").getValue()).toString());
+        interstitialAd = new com.facebook.ads.InterstitialAd(activity, interstitialId);
+
+        interstitialAd.loadAd();
+
+      }
+
+      @Override
+      public void onCancelled(@androidx.annotation.NonNull DatabaseError databaseError) {
+
+      }
+    });
+
+  }
+
+  @Override
+  public void onDestroy() {
+    if (interstitialAd != null) {
+      interstitialAd.destroy();
+    }
+    super.onDestroy();
+  }
 }

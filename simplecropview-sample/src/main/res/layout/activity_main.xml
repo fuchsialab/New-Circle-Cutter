@@ -14,10 +14,12 @@
 
   <RelativeLayout
 
+      android:gravity="clip_horizontal"
       android:layout_width="match_parent"
       android:layout_height="match_parent">
 
     <androidx.appcompat.widget.Toolbar
+        android:layout_marginBottom="80dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/toolbar"
@@ -28,13 +30,11 @@
     </androidx.appcompat.widget.Toolbar>
 
     <Button
-
-        android:layout_centerInParent="true"
+        android:layout_below="@id/toolbar"
         android:layout_centerHorizontal="true"
         android:textStyle="bold"
         android:background="#FF5722"
         android:textColor="#FFFFFF"
-        android:layout_marginTop="200dp"
         android:id="@+id/rx_sample_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -43,7 +43,19 @@
         android:padding="@dimen/spacing_xsmall"
         android:text="    Crop Your Image    "
         />
+
+
+
+    <com.facebook.ads.NativeAdLayout
+        android:layout_below="@+id/rx_sample_button"
+        android:id="@+id/native_ad_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" />
+
   </RelativeLayout>
+
+
 
   <com.google.android.material.navigation.NavigationView
       android:layout_width="wrap_content"
