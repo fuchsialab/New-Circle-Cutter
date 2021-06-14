@@ -54,6 +54,28 @@
         android:paddingRight="@dimen/spacing_xsmall"
         >
 
+      <Button
+          android:id="@+id/button1_1"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_gravity="center_vertical"
+          android:layout_margin="@dimen/spacing_xsmall"
+          android:padding="@dimen/spacing_xsmall"
+          android:text="Square"
+          style="@style/AppTheme.Button.Borderless"
+          />
+
+      <Button
+          android:id="@+id/buttonFree"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_gravity="center_vertical"
+          android:layout_margin="@dimen/spacing_xsmall"
+          android:padding="@dimen/spacing_xsmall"
+          android:text="Free"
+          style="@style/AppTheme.Button.Borderless"
+          />
+
 
       <Button
           android:id="@+id/buttonCircle"
@@ -62,7 +84,7 @@
           android:layout_gravity="center_vertical"
           android:layout_margin="@dimen/spacing_xsmall"
           android:padding="@dimen/spacing_xsmall"
-          android:text="Circle Shape"
+          android:text="Circle"
           style="@style/AppTheme.Button.Borderless"
           />
 

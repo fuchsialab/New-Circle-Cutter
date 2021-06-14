@@ -228,6 +228,8 @@ public class RxFragment extends Fragment {
     view.findViewById(R.id.buttonRotateLeft).setOnClickListener(btnListener);
     view.findViewById(R.id.buttonRotateRight).setOnClickListener(btnListener);
     view.findViewById(R.id.buttonCircle).setOnClickListener(btnListener);
+    view.findViewById(R.id.button1_1).setOnClickListener(btnListener);
+    view.findViewById(R.id.buttonFree).setOnClickListener(btnListener);
   }
 
   public void pickImage() {
@@ -333,66 +335,13 @@ public class RxFragment extends Fragment {
     @Override public void onClick(View v) {
       switch (v.getId()) {
         case R.id.buttonDone:
-
-          if (interstitialAd != null) {
-            if (interstitialAd.isAdLoaded()) {
-              interstitialAd.show();
-
-            } else {
-              interstitialAd.loadAd();
-
-              mDisposable.add(cropImage());
-            }
-
-            InterstitialAdListener interstitialAdListener = new InterstitialAdListener() {
-              @Override
-              public void onInterstitialDisplayed(Ad ad) {
-                interstitialAd.loadAd();
-              }
-
-              @Override
-              public void onInterstitialDismissed(Ad ad) {
-                interstitialAd.loadAd();
-
-                mDisposable.add(cropImage());
-
-              }
-
-              @Override
-              public void onError(Ad ad, AdError adError) {
-                interstitialAd.loadAd();
-              }
-
-              @Override
-              public void onAdLoaded(Ad ad) {
-
-                Log.d(TAG, "Interstitial ad is loaded and ready to be displayed!");
-
-              }
-
-              @Override
-              public void onAdClicked(Ad ad) {
-
-                Log.d(TAG, "Interstitial ad clicked!");
-              }
-
-              @Override
-              public void onLoggingImpression(Ad ad) {
-
-                Log.d(TAG, "Interstitial ad impression logged!");
-              }
-            };
-
-            interstitialAd.loadAd(
-                    interstitialAd.buildLoadAdConfig()
-                            .withAdListener(interstitialAdListener)
-                            .build());
-
-          } else {
-
-            mDisposable.add(cropImage());
-          }
-
+          mDisposable.add(cropImage());
+          break;
+        case R.id.button1_1:
+          mCropView.setCropMode(CropImageView.CropMode.SQUARE);
+          break;
+        case R.id.buttonFree:
+          mCropView.setCropMode(CropImageView.CropMode.FREE);
           break;
         case R.id.buttonCircle:
           mCropView.setCropMode(CropImageView.CropMode.CIRCLE);

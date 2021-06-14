@@ -13,11 +13,18 @@ import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.facebook.ads.Ad;
+import com.facebook.ads.AdError;
 import com.facebook.ads.AdView;
 import com.facebook.ads.AudienceNetworkAds;
+import com.facebook.ads.InterstitialAd;
+import com.facebook.ads.InterstitialAdListener;
+import com.facebook.ads.NativeAd;
+import com.facebook.ads.NativeAdLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -37,6 +44,7 @@ import androidx.appcompat.widget.Toolbar;
 
 public class ResultActivity extends AppCompatActivity {
   private static final String TAG = ResultActivity.class.getSimpleName();
+  private static InterstitialAd interstitialAd;
   private ImageView mImageView;
   private ExecutorService mExecutor;
 
@@ -45,6 +53,10 @@ public class ResultActivity extends AppCompatActivity {
   private String bannerid;
   RelativeLayout layout;
   private AdView adView;
+
+
+  private String interstitialId;
+
 
   public static Intent createIntent(Activity activity, Uri uri) {
     Intent intent = new Intent(activity, ResultActivity.class);
@@ -62,7 +74,8 @@ public class ResultActivity extends AppCompatActivity {
 
     Ads();
 
-    // apply custom font
+
+      // apply custom font
     FontUtils.setFont((ViewGroup) findViewById(R.id.layout_root));
 
     initToolbar();
@@ -79,6 +92,8 @@ public class ResultActivity extends AppCompatActivity {
     mExecutor.shutdown();
     if (adView != null) {
       adView.destroy();
+    }else if(interstitialAd != null) {
+      interstitialAd.destroy();
     }
     super.onDestroy();
   }
@@ -156,7 +171,51 @@ public class ResultActivity extends AppCompatActivity {
         layout.addView(adView);
         adView.loadAd();
 
+        interstitialId = String.valueOf(Objects.requireNonNull(dataSnapshot.child("Interstitial").getValue()).toString());
+        interstitialAd = new com.facebook.ads.InterstitialAd(ResultActivity.this, interstitialId);
+
+        interstitialAd.loadAd();
+
+        InterstitialAdListener interstitialAdListener = new InterstitialAdListener() {
+          @Override
+          public void onInterstitialDisplayed(Ad ad) {
+            interstitialAd.loadAd();
+          }
+
+          @Override
+          public void onInterstitialDismissed(Ad ad) {
+
+          }
+
+          @Override
+          public void onError(Ad ad, AdError adError) {
+            interstitialAd.loadAd();
+          }
+
+          @Override
+          public void onAdLoaded(Ad ad) {
+
+            interstitialAd.show();
+          }
+
+          @Override
+          public void onAdClicked(Ad ad) {
+
+          }
+
+          @Override
+          public void onLoggingImpression(Ad ad) {
+
+          }
+        };
+
+        interstitialAd.loadAd(
+                interstitialAd.buildLoadAdConfig()
+                        .withAdListener(interstitialAdListener)
+                        .build());
+
       }
+
 
       @Override
       public void onCancelled(@NonNull DatabaseError databaseError) {
