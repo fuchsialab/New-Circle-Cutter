@@ -6,7 +6,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/root_layout"
-    android:background="#CFCFCF"
+    android:background="#B1ADAD"
     tools:openDrawer="start"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -19,7 +19,7 @@
       android:layout_height="match_parent">
 
     <androidx.appcompat.widget.Toolbar
-        android:layout_marginBottom="80dp"
+        android:layout_marginBottom="180dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/toolbar"
@@ -45,16 +45,49 @@
         />
 
 
-
-    <com.facebook.ads.NativeAdLayout
+    <RelativeLayout
+        android:id="@+id/xx"
         android:layout_below="@+id/rx_sample_button"
-        android:id="@+id/native_ad_container"
+        android:gravity="center_horizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical" />
+        android:layout_height="wrap_content">
+
+      <RelativeLayout
+
+          android:id="@+id/adView"
+          android:gravity="clip_horizontal"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_centerHorizontal="true"
+          tools:ignore="MissingConstraints"/>
+
+
+    </RelativeLayout>
+
+    <androidx.cardview.widget.CardView
+        android:layout_marginTop="10dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        app:cardCornerRadius="15dp"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/xx"
+        android:layout_width="wrap_content"
+        android:layout_height="200dp">
+
+      <ImageView
+          android:id="@+id/WP"
+          android:src="@drawable/wp"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent">
+
+      </ImageView>
+
+
+    </androidx.cardview.widget.CardView>
+
+
 
   </RelativeLayout>
-
 
 
   <com.google.android.material.navigation.NavigationView

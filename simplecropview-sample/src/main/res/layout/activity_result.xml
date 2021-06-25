@@ -26,13 +26,11 @@
       />
 
   <RelativeLayout
-      android:layout_alignParentBottom="true"
       android:id="@+id/adView"
-      android:gravity="center"
-      android:layout_centerHorizontal="true"
-      android:layout_width="wrap_content"
+      android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      tools:ignore="MissingConstraints"/>
+      android:gravity="center"
+      tools:ignore="MissingConstraints" />
 
 
 </LinearLayout>

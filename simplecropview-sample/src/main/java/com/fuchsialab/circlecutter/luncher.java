@@ -20,7 +20,7 @@ public class luncher extends AppCompatActivity {
         new Handler().postDelayed(new Runnable() {
             @Override public void run() {
                 Intent i = new Intent(luncher.this, MainActivity.class); startActivity(i);
-                finish(); } }, 1000);
+                finish(); } }, 500);
 
 
 

@@ -17,15 +17,15 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.Toast;
-
-import com.facebook.ads.Ad;
-import com.facebook.ads.AdError;
-import com.facebook.ads.AdView;
-import com.facebook.ads.AudienceNetworkAds;
-import com.facebook.ads.InterstitialAd;
-import com.facebook.ads.InterstitialAdListener;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.FullScreenContentCallback;
+import com.google.android.gms.ads.LoadAdError;
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.initialization.AdapterStatus;
+import com.google.android.gms.ads.initialization.InitializationStatus;
+import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
+import com.google.android.gms.ads.interstitial.InterstitialAd;
+import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -53,18 +53,14 @@ import io.reactivex.schedulers.Schedulers;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Map;
 import java.util.Objects;
 
+import static com.google.firebase.database.FirebaseDatabase.getInstance;
+
 public class RxFragment extends Fragment {
-  private static final String TAG = RxFragment.class.getSimpleName();
 
   FragmentActivity activity;
-  FirebaseAuth mAuth;
-  DatabaseReference mDatabase;
-
-  private InterstitialAd interstitialAd;
-  private String interstitialId;
-
   private static final int REQUEST_PICK_IMAGE = 10011;
   private static final int REQUEST_SAF_PICK_IMAGE = 10012;
   private static final String PROGRESS_DIALOG = "ProgressDialog";
@@ -105,11 +101,22 @@ public class RxFragment extends Fragment {
     bindViews(view);
 
     activity = getActivity();
-    AudienceNetworkAds.initialize(getActivity());
-    mAuth=FirebaseAuth.getInstance();
-    mDatabase= FirebaseDatabase.getInstance().getReference();
 
-    Ads();
+
+    MobileAds.initialize(getActivity(), new OnInitializationCompleteListener() {
+      @Override
+      public void onInitializationComplete(InitializationStatus initializationStatus) {
+        Map<String, AdapterStatus> statusMap = initializationStatus.getAdapterStatusMap();
+        for (String adapterClass : statusMap.keySet()) {
+          AdapterStatus status = statusMap.get(adapterClass);
+          Log.d("MyApp", String.format(
+                  "Adapter name: %s, Description: %s, Latency: %d",
+                  adapterClass, status.getDescription(), status.getLatency()));
+        }
+
+        // Start loading ads here...
+      }
+    });
 
 
     if (savedInstanceState != null) {
@@ -269,7 +276,7 @@ public class RxFragment extends Fragment {
     File imageDir = null;
     File extStorageDir = Environment.getExternalStorageDirectory();
     if (extStorageDir.canWrite()) {
-      imageDir = new File(extStorageDir.getPath() + "/simplecropview");
+      imageDir = new File(extStorageDir.getPath() + "/Circle Cutter");
     }
     if (imageDir != null) {
       if (!imageDir.exists()) {
@@ -336,6 +343,7 @@ public class RxFragment extends Fragment {
       switch (v.getId()) {
         case R.id.buttonDone:
           mDisposable.add(cropImage());
+
           break;
         case R.id.button1_1:
           mCropView.setCropMode(CropImageView.CropMode.SQUARE);
@@ -360,34 +368,4 @@ public class RxFragment extends Fragment {
   };
 
 
-  private void Ads() {
-
-    DatabaseReference rootref = FirebaseDatabase.getInstance().getReference().child("FbAds");
-    rootref.addListenerForSingleValueEvent(new ValueEventListener() {
-
-      @Override
-      public void onDataChange(@androidx.annotation.NonNull DataSnapshot dataSnapshot) {
-
-        interstitialId = String.valueOf(Objects.requireNonNull(dataSnapshot.child("Interstitial").getValue()).toString());
-        interstitialAd = new com.facebook.ads.InterstitialAd(activity, interstitialId);
-
-        interstitialAd.loadAd();
-
-      }
-
-      @Override
-      public void onCancelled(@androidx.annotation.NonNull DatabaseError databaseError) {
-
-      }
-    });
-
-  }
-
-  @Override
-  public void onDestroy() {
-    if (interstitialAd != null) {
-      interstitialAd.destroy();
-    }
-    super.onDestroy();
-  }
 }

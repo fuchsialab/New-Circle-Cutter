@@ -9,7 +9,7 @@
 
         android:layout_width="wrap_content"
         android:gravity="center"
-        android:padding="10sp"
+        android:padding="5sp"
         android:orientation="vertical"
         android:background="@drawable/progressbar"
         android:layout_height="wrap_content">

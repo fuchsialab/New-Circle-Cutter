@@ -10,21 +10,25 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Display;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
-
-import com.facebook.ads.Ad;
-import com.facebook.ads.AdError;
-import com.facebook.ads.AdView;
-import com.facebook.ads.AudienceNetworkAds;
-import com.facebook.ads.InterstitialAd;
-import com.facebook.ads.InterstitialAdListener;
-import com.facebook.ads.NativeAd;
-import com.facebook.ads.NativeAdLayout;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.FullScreenContentCallback;
+import com.google.android.gms.ads.LoadAdError;
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.initialization.AdapterStatus;
+import com.google.android.gms.ads.initialization.InitializationStatus;
+import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
+import com.google.android.gms.ads.interstitial.InterstitialAd;
+import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -33,6 +37,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.isseiaoki.simplecropview.util.Utils;
 
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -42,20 +47,21 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import static com.google.firebase.database.FirebaseDatabase.getInstance;
+
 public class ResultActivity extends AppCompatActivity {
-  private static final String TAG = ResultActivity.class.getSimpleName();
-  private static InterstitialAd interstitialAd;
+
   private ImageView mImageView;
   private ExecutorService mExecutor;
 
   FirebaseAuth mAuth;
   DatabaseReference mDatabase;
   private String bannerid;
-  RelativeLayout layout;
-  private AdView adView;
+  private AdView mAdView;
 
 
   private String interstitialId;
+  private static InterstitialAd mInterstitialAd;
 
 
   public static Intent createIntent(Activity activity, Uri uri) {
@@ -70,10 +76,24 @@ public class ResultActivity extends AppCompatActivity {
 
     mAuth=FirebaseAuth.getInstance();
     mDatabase= FirebaseDatabase.getInstance().getReference();
-    AudienceNetworkAds.initialize(this);
 
-    Ads();
 
+    bannerAds();
+
+    MobileAds.initialize(this, new OnInitializationCompleteListener() {
+      @Override
+      public void onInitializationComplete(InitializationStatus initializationStatus) {
+        Map<String, AdapterStatus> statusMap = initializationStatus.getAdapterStatusMap();
+        for (String adapterClass : statusMap.keySet()) {
+          AdapterStatus status = statusMap.get(adapterClass);
+          Log.d("MyApp", String.format(
+                  "Adapter name: %s, Description: %s, Latency: %d",
+                  adapterClass, status.getDescription(), status.getLatency()));
+        }
+
+        // Start loading ads here...
+      }
+    });
 
       // apply custom font
     FontUtils.setFont((ViewGroup) findViewById(R.id.layout_root));
@@ -88,15 +108,7 @@ public class ResultActivity extends AppCompatActivity {
     mExecutor.submit(new LoadScaledImageTask(this, uri, mImageView, calcImageSize()));
   }
 
-  @Override protected void onDestroy() {
-    mExecutor.shutdown();
-    if (adView != null) {
-      adView.destroy();
-    }else if(interstitialAd != null) {
-      interstitialAd.destroy();
-    }
-    super.onDestroy();
-  }
+
 
   @Override public void onConfigurationChanged(Configuration newConfig) {
     super.onConfigurationChanged(newConfig);
@@ -157,65 +169,46 @@ public class ResultActivity extends AppCompatActivity {
     }
   }
 
-  private void Ads() {
-
-    DatabaseReference rootref = FirebaseDatabase.getInstance().getReference().child("FbAds");
+  public void bannerAds(){
+    DatabaseReference rootref= getInstance().getReference().child("AdUnits");
     rootref.addListenerForSingleValueEvent(new ValueEventListener() {
 
 
       @Override
       public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-        bannerid = String.valueOf(Objects.requireNonNull(dataSnapshot.child("banner").getValue()).toString());
-        layout = findViewById(R.id.adView);
-        adView = new com.facebook.ads.AdView(ResultActivity.this, bannerid, com.facebook.ads.AdSize.BANNER_HEIGHT_50);
-        layout.addView(adView);
-        adView.loadAd();
+        bannerid=String.valueOf(Objects.requireNonNull(dataSnapshot.child("banner").getValue()).toString());
+        interstitialId=String.valueOf(Objects.requireNonNull(dataSnapshot.child("Interstitial").getValue()).toString());
 
-        interstitialId = String.valueOf(Objects.requireNonNull(dataSnapshot.child("Interstitial").getValue()).toString());
-        interstitialAd = new com.facebook.ads.InterstitialAd(ResultActivity.this, interstitialId);
+        View view= findViewById(R.id.adView);
+        mAdView=new AdView(ResultActivity.this);
+        ((RelativeLayout)view).addView(mAdView);
+        mAdView.setAdSize(AdSize.BANNER);
+        mAdView.setAdUnitId(bannerid);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        mAdView.loadAd(adRequest);
 
-        interstitialAd.loadAd();
+        //MediationTestSuite.launch(ResultActivity.this);
 
-        InterstitialAdListener interstitialAdListener = new InterstitialAdListener() {
+        InterstitialAd.load(ResultActivity.this,interstitialId, adRequest, new InterstitialAdLoadCallback() {
           @Override
-          public void onInterstitialDisplayed(Ad ad) {
-            interstitialAd.loadAd();
-          }
+          public void onAdLoaded(@androidx.annotation.NonNull InterstitialAd interstitialAd) {
 
-          @Override
-          public void onInterstitialDismissed(Ad ad) {
+            mInterstitialAd = interstitialAd;
 
-          }
-
-          @Override
-          public void onError(Ad ad, AdError adError) {
-            interstitialAd.loadAd();
-          }
-
-          @Override
-          public void onAdLoaded(Ad ad) {
-
-            interstitialAd.show();
-          }
-
-          @Override
-          public void onAdClicked(Ad ad) {
+            mInterstitialAd.show(ResultActivity.this);
 
           }
 
           @Override
-          public void onLoggingImpression(Ad ad) {
+          public void onAdFailedToLoad(@androidx.annotation.NonNull LoadAdError loadAdError) {
+
+            mInterstitialAd = null;
 
           }
-        };
+        });
 
-        interstitialAd.loadAd(
-                interstitialAd.buildLoadAdConfig()
-                        .withAdListener(interstitialAdListener)
-                        .build());
 
       }
-
 
       @Override
       public void onCancelled(@NonNull DatabaseError databaseError) {
@@ -223,6 +216,8 @@ public class ResultActivity extends AppCompatActivity {
       }
     });
 
+
   }
+
 
 }
