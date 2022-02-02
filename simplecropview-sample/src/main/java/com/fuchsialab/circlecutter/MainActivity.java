@@ -18,6 +18,7 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
@@ -166,7 +167,6 @@ public class MainActivity extends AppCompatActivity implements UpdateHelper.OnUp
       @Override
       public void onClick(View v) {
 
-
         if (mInterstitialAd != null) {
 
           mInterstitialAd.show(MainActivity.this);
@@ -208,7 +208,6 @@ public class MainActivity extends AppCompatActivity implements UpdateHelper.OnUp
           startActivity(intent);
 
         }
-
 
       }
     });

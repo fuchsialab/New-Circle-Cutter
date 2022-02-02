@@ -18,6 +18,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
+
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
@@ -39,6 +40,8 @@ import com.isseiaoki.simplecropview.util.Utils;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -59,7 +62,6 @@ public class ResultActivity extends AppCompatActivity {
   private String bannerid;
   private AdView mAdView;
 
-
   private String interstitialId;
   private static InterstitialAd mInterstitialAd;
 
@@ -76,7 +78,6 @@ public class ResultActivity extends AppCompatActivity {
 
     mAuth=FirebaseAuth.getInstance();
     mDatabase= FirebaseDatabase.getInstance().getReference();
-
 
     bannerAds();
 
@@ -99,6 +100,7 @@ public class ResultActivity extends AppCompatActivity {
     FontUtils.setFont((ViewGroup) findViewById(R.id.layout_root));
 
     initToolbar();
+
 
     Toast.makeText(ResultActivity.this,"Image Saved Successfully",Toast.LENGTH_SHORT).show();
     mImageView = (ImageView) findViewById(R.id.result_image);
