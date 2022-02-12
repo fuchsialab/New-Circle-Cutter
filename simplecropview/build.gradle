@@ -8,14 +8,14 @@ dependencies {
 }
 
 android {
-  compileSdkVersion 30
-  buildToolsVersion '30.0.2'
+  compileSdkVersion 31
+  buildToolsVersion '30.0.3'
 
   defaultConfig {
     minSdkVersion 21
-    targetSdkVersion 30
-    versionCode 23
-    versionName "3.3"
+    targetSdkVersion 31
+    versionCode 24
+    versionName "3.4"
     consumerProguardFiles 'proguard-rules.pro'
   }
 
