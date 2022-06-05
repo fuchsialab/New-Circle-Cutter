@@ -342,7 +342,7 @@ public class MainActivity extends AppCompatActivity implements UpdateHelper.OnUp
         View view= findViewById(R.id.adView);
         mAdView=new AdView(MainActivity.this);
         ((RelativeLayout)view).addView(mAdView);
-        mAdView.setAdSize(AdSize.BANNER);
+        mAdView.setAdSize(AdSize.SMART_BANNER);
         mAdView.setAdUnitId(bannerid);
         AdRequest adRequest = new AdRequest.Builder().build();
         mAdView.loadAd(adRequest);

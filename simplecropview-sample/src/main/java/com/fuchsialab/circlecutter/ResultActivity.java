@@ -184,7 +184,7 @@ public class ResultActivity extends AppCompatActivity {
         View view= findViewById(R.id.adView);
         mAdView=new AdView(ResultActivity.this);
         ((RelativeLayout)view).addView(mAdView);
-        mAdView.setAdSize(AdSize.BANNER);
+        mAdView.setAdSize(AdSize.SMART_BANNER);
         mAdView.setAdUnitId(bannerid);
         AdRequest adRequest = new AdRequest.Builder().build();
         mAdView.loadAd(adRequest);
