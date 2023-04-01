@@ -1,10 +1,12 @@
 package com.fuchsialab.circlecutter;
 
 
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -89,6 +91,13 @@ public class MainActivity extends AppCompatActivity implements UpdateHelper.OnUp
     mAuth=FirebaseAuth.getInstance();
     mDatabase= FirebaseDatabase.getInstance().getReference();
 
+    SharedPreferences prefs = getSharedPreferences("prefs", MODE_PRIVATE);
+    boolean firstStart = prefs.getBoolean("firstStart", true);
+
+    if (firstStart) {
+      showStartDialog();
+    }
+
     bannerAds();
 
     MobileAds.initialize(this, new OnInitializationCompleteListener() {
@@ -138,7 +147,7 @@ public class MainActivity extends AppCompatActivity implements UpdateHelper.OnUp
         progressDialog.dismiss();
 
       }
-    },3000);
+    },2000);
 
     UpdateHelper.with(this)
             .onUpdateCheck(this)
@@ -328,12 +337,30 @@ public class MainActivity extends AppCompatActivity implements UpdateHelper.OnUp
     return false;
   }
 
+  private void showStartDialog() {
+    new AlertDialog.Builder(this)
+            .setTitle("Privacy Policy")
+            .setMessage("This app need your internet permission, storage permission, contact permission. Data permission is needed for showing advertisement. We always aware of your privacy. Please tap on 'Ok' if you want to continue.")
+            .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+              @Override
+              public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+              }
+            })
+            .create().show();
+
+    SharedPreferences prefs = getSharedPreferences("prefs", MODE_PRIVATE);
+    SharedPreferences.Editor editor = prefs.edit();
+    editor.putBoolean("firstStart", false);
+    editor.apply();
+  }
 
   public void bannerAds(){
     DatabaseReference rootref= getInstance().getReference().child("AdUnits");
     rootref.addListenerForSingleValueEvent(new ValueEventListener() {
 
 
+      @SuppressLint("MissingPermission")
       @Override
       public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
         bannerid=String.valueOf(Objects.requireNonNull(dataSnapshot.child("banner").getValue()).toString());

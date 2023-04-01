@@ -48,9 +48,7 @@ public class ProgressDialogFragment extends DialogFragment {
     Dialog dialog = super.onCreateDialog(savedInstanceState);
     dialog.getWindow().requestFeature(Window.FEATURE_NO_TITLE);
     dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-    // タッチしても消えないように設定
     dialog.setCancelable(false);
-    // ビュー全体のリスナ
     dialog.setCanceledOnTouchOutside(false);
     dialog.setOnKeyListener(new DialogInterface.OnKeyListener() {
       @Override public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
