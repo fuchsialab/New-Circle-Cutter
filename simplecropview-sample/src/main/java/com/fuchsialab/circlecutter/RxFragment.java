@@ -162,33 +162,78 @@ public class RxFragment extends Fragment {
   }
 
   private Disposable loadImage(final Uri uri) {
-    mSourceUri = uri;
-    return new RxPermissions(getActivity()).request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-        .filter(new Predicate<Boolean>() {
-          @Override public boolean test(@io.reactivex.annotations.NonNull Boolean granted)
-              throws Exception {
-            return granted;
-          }
-        })
-        .flatMapCompletable(new Function<Boolean, CompletableSource>() {
-          @Override
-          public CompletableSource apply(@io.reactivex.annotations.NonNull Boolean aBoolean)
-              throws Exception {
-            return mCropView.load(uri)
-                .useThumbnail(true)
-                .initialFrameRect(mFrameRect)
-                .executeAsCompletable();
-          }
-        })
-        .subscribeOn(Schedulers.newThread())
-        .observeOn(AndroidSchedulers.mainThread())
-        .subscribe(new Action() {
-          @Override public void run() throws Exception {
-          }
-        }, new Consumer<Throwable>() {
-          @Override public void accept(@NonNull Throwable throwable) throws Exception {
-          }
-        });
+
+
+    if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+
+      mSourceUri = uri;
+
+      return new RxPermissions(getActivity()).request(Manifest.permission.READ_MEDIA_IMAGES)
+              .filter(new Predicate<Boolean>() {
+                @Override
+                public boolean test(@io.reactivex.annotations.NonNull Boolean granted)
+                        throws Exception {
+                  return granted;
+                }
+              })
+              .flatMapCompletable(new Function<Boolean, CompletableSource>() {
+                @Override
+                public CompletableSource apply(@io.reactivex.annotations.NonNull Boolean aBoolean)
+                        throws Exception {
+                  return mCropView.load(uri)
+                          .useThumbnail(true)
+                          .initialFrameRect(mFrameRect)
+                          .executeAsCompletable();
+                }
+              })
+              .subscribeOn(Schedulers.newThread())
+              .observeOn(AndroidSchedulers.mainThread())
+              .subscribe(new Action() {
+                @Override
+                public void run() throws Exception {
+                }
+              }, new Consumer<Throwable>() {
+                @Override
+                public void accept(@NonNull Throwable throwable) throws Exception {
+                }
+              });
+
+
+    }else {
+
+      mSourceUri = uri;
+
+      return new RxPermissions(getActivity()).request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+              .filter(new Predicate<Boolean>() {
+                @Override
+                public boolean test(@io.reactivex.annotations.NonNull Boolean granted)
+                        throws Exception {
+                  return granted;
+                }
+              })
+              .flatMapCompletable(new Function<Boolean, CompletableSource>() {
+                @Override
+                public CompletableSource apply(@io.reactivex.annotations.NonNull Boolean aBoolean)
+                        throws Exception {
+                  return mCropView.load(uri)
+                          .useThumbnail(true)
+                          .initialFrameRect(mFrameRect)
+                          .executeAsCompletable();
+                }
+              })
+              .subscribeOn(Schedulers.newThread())
+              .observeOn(AndroidSchedulers.mainThread())
+              .subscribe(new Action() {
+                @Override
+                public void run() throws Exception {
+                }
+              }, new Consumer<Throwable>() {
+                @Override
+                public void accept(@NonNull Throwable throwable) throws Exception {
+                }
+              });
+
+    }
   }
 
   private Disposable cropImage() {

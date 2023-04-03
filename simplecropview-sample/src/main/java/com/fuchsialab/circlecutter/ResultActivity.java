@@ -1,5 +1,6 @@
 package com.fuchsialab.circlecutter;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -176,6 +177,7 @@ public class ResultActivity extends AppCompatActivity {
     rootref.addListenerForSingleValueEvent(new ValueEventListener() {
 
 
+      @SuppressLint("MissingPermission")
       @Override
       public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
         bannerid=String.valueOf(Objects.requireNonNull(dataSnapshot.child("banner").getValue()).toString());
